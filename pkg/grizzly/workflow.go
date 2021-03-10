@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-jsonnet"
 	"github.com/grafana/grizzly/pkg/term"
+	"github.com/grafana/tanka/pkg/jsonnet/native"
 	"github.com/pmezard/go-difflib/difflib"
 	"golang.org/x/crypto/ssh/terminal"
 	"gopkg.in/fsnotify.v1"
@@ -96,6 +97,9 @@ func Parse(config Config, jsonnetFile string, targets []string) (Resources, erro
 	script := getPrivateElementsScript(jsonnetFile, config.Registry.Handlers)
 	vm := jsonnet.MakeVM()
 	vm.Importer(newExtendedImporter([]string{"vendor", "lib", "."}))
+	for _, nf := range native.Funcs() {
+		vm.NativeFunction(nf)
+	}
 
 	result, err := vm.EvaluateSnippet(jsonnetFile, script)
 	if err != nil {
